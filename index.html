@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="index.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+    <title>Atividade AJAX</title>
+</head>
+<body>
+    
+
+    <section>
+        <div id="map"></div>
+    </section>
+    
+    <section>
+        <form>
+            <input type="text" id="address" name="address"><br>
+            <input type="button" onclick="return ajaxHandle(this);" value="Buscar endereços">
+        </form>
+    </section>
+    
+    <!-- Async script executes immediately and must be after any DOM elements used in callback. AIzaSyDw5sxkvC75XZoQf3ErxBvYLe1vtAHyXgI -->
+    <script
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCF6YGbcBZ4VP-ok-S4PsDooxAYy-w48MA&callback=initMap&v=weekly"
+      async
+    ></script>
+
+    <div>
+        <table>
+            <tbody id="result">
+                <tr>
+                    <th>CEP</th>
+                    <th>LOGRADOURO</th>
+                    <th>BAIRRO</th>
+                    <th>CIDADE</th>
+                    <th>ESTADO</th>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+</body>
+</html>

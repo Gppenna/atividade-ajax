@@ -1,5 +1,7 @@
 let map;
 let bounds;
+let markers = [];
+let id = null;
 const POSTAL = "postal_code";
 
 function initMap() {
@@ -34,27 +36,19 @@ const getPostal = (jsonResult) => {
     
     let addressResults = jsonResult["results"][0]["address_components"];
     let geoResults = jsonResult["results"][0]["geometry"]["location"];
+
     console.log(jsonResult);
     
     for (let index = 0; index < addressResults.length; index++) {
         const element = addressResults[index];
         if(element["types"][0] == POSTAL) {
             finalArray.push(element["long_name"]);
-            let marker = new google.maps.Marker({
-                position: geoResults,
-                map,
-                title: element["long_name"],
-              });
-            bounds.extend(marker.position);
-            
         }
     }
-    map.fitBounds(bounds);
-    callPostmon(finalArray);
+    callPostmon(finalArray, geoResults)
 }
 
-const callPostmon = (finalArray) => {
-    
+const callPostmon = (finalArray, geoResults) => {    
     let url = `https://api.postmon.com.br/v1/cep/`;
     for (let index = 0; index < finalArray.length; index++) {
         let request = new XMLHttpRequest();
@@ -66,15 +60,57 @@ const callPostmon = (finalArray) => {
         request.send();
         request.onreadystatechange = function() {
             if (request.readyState === 4) {
-                var jsonResult = JSON.parse(request.responseText);
-                writeHTML(jsonResult);
+                if(request.responseText) {
+                    var jsonResult = JSON.parse(request.responseText);
+                    if(finalArray) {
+                        let marker = new google.maps.Marker({
+                            position: geoResults,
+                            map,
+                            title: finalArray[0],
+                          });
                 
+                        var listener = google.maps.event.addListener(map, "idle", function() { 
+                            if (map.getZoom() > 16) map.setZoom(16); 
+                            google.maps.event.removeListener(listener); 
+                        });
+                        
+                        bounds.extend(marker.position);
+                        map.fitBounds(bounds);
+                        markers.push(marker);
+                    }
+                    writeHTML(jsonResult);
+                }
+                else {
+                    if(document.getElementById('error')){} else {
+                        writeError();
+                    }
+                }  
             }
         }
     }
 }
 
+const writeError = () => {
+    var error = document.getElementById('form-id');
+    var msg = document.createElement('p');
+    msg.id = 'error';
+    msg.innerHTML = 'Nenhum endereço localizado!';
+    msg.style.height = '0';
+    msg.style.paddingBottom = '0';
+    error.insertBefore(msg, error.firstChild);
+
+    clearInterval(id);
+    id = setInterval(frame, 10);
+    function frame() {
+        msg.style.height = '20px';
+    }
+}
+
 const writeHTML = (jsonResult) => {
+    if(document.getElementById('error')){
+        let remove = document.getElementById('error');
+        remove.remove();
+    }
     let div = document.getElementById('result');
     let row = document.createElement('tr');
 
